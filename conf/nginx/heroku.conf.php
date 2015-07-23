@@ -14,14 +14,14 @@ http {
     #keepalive_timeout  0;
     keepalive_timeout  65;
 
-    #gzip  on;
+    gzip  on;
 
     fastcgi_buffers 256 4k;
 
     # define an easy to reference name that can be used in fastgi_pass
     upstream heroku-fcgi {
         #server 127.0.0.1:4999 max_fails=3 fail_timeout=3s;
-        server unix:/tmp/heroku.fcgi.<?=getenv('PORT')?:'8080'?>.sock max_fails=3 fail_timeout=3s;
+        server unix:<?=getenv('SOCKET_PATH')?> max_fails=3 fail_timeout=3s;
         keepalive 16;
     }
     
@@ -52,8 +52,8 @@ http {
         
         root "<?=getenv('DOCUMENT_ROOT')?:getenv('HEROKU_APP_DIR')?:getcwd()?>";
         
-        error_log stderr;
-        access_log /tmp/heroku.nginx_access.<?=getenv('PORT')?:'8080'?>.log;
+        error_log <?=getenv('ERROR_LOG_PATH')?>;
+        access_log <?=getenv('ACCESS_LOG_PATH')?>;
         
         include "<?=getenv('HEROKU_PHP_NGINX_CONFIG_INCLUDE')?>";
         
