@@ -319,6 +319,8 @@ fi
     wait
 ) & pids+=($!)
 
+
+
 echo "Starting hhvm..." >&2
 (
     trap 'echo "hhvm" >&3;' EXIT
@@ -330,12 +332,16 @@ echo "Starting hhvm..." >&2
 # wait a few seconds for HHVM to finish initializing; otherwise an early request might break Apache with the FastCGI pipe not being ready
 sleep 2
 
+if [[ -n ${nginx_main_config:-} || ( ${nginx_main_config:="$HEROKU_APP_DIR/$COMPOSER_VENDOR_DIR/xev/heroku-buildpack-php/conf/nginx/nginx.conf.php"} && $verbose) ]]; then
+    echo "Using Main Nginx configuration file '${nginx_main_config#$HEROKU_APP_DIR/}'" >&2
+fi
+nginx_main_config=$(php_passthrough "$nginx_main_config")
+
 echo "Starting nginx..." >&2
 (
     trap 'echo "nginx" >&3;' EXIT
     trap 'kill -TERM $! 2> /dev/null' TERM
-    #nginx -g "daemon off; include $nginx_config;" &
-    nginx -c "$nginx_config" -g "daemon off;" &
+    nginx -c "$nginx_main_config" -g "daemon off; include $nginx_config;" &
     wait
 ) & pids+=($!)
 
