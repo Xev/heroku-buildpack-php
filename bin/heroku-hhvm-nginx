@@ -334,7 +334,8 @@ echo "Starting nginx..." >&2
 (
     trap 'echo "nginx" >&3;' EXIT
     trap 'kill -TERM $! 2> /dev/null' TERM
-    nginx -g "daemon off; include $nginx_config;" &
+    #nginx -g "daemon off; include $nginx_config;" &
+    nginx -c "$nginx_config" -g "daemon off;" &
     wait
 ) & pids+=($!)
 
